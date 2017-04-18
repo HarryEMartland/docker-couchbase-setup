@@ -1,0 +1,22 @@
+version: '2'
+
+services:
+
+  couchbase:
+    image: couchbase
+    ports:
+      - "8091-8094:8091-8094"
+      - "11210:11210"
+
+  setup-couchbase:
+    image: harrymartland/couchbase-setup
+    environment:
+      - COUCHBASE_HOST=couchbase
+      - COUCHBASE_USERNAME=admin
+      - COUCHBASE_PASSWORD=password
+
+      - COUCHBASE_BUCKET_BUCKET1_NAME=bucket1
+      - COUCHBASE_BUCKET_BUCKET1_PASSWORD=bucket1_pass
+
+      - COUCHBASE_BUCKET_ANOTHER_BUCKET_NAME=bucket_number_2
+      - COUCHBASE_BUCKET_ANOTHER_BUCKET_PASSWORD=
