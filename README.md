@@ -3,6 +3,7 @@
 This docker contain can be used to help setup Couchbase.
 The initial use case was for disposable environments for testing or developing against.
 The container consists of a single python script which reads the environment variables holding the desired setup for couchbase.
+Http requests are made to the couchbase server to create a user and buckets using the provided configuration.
 
 ## Usage
 
