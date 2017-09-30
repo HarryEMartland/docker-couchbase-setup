@@ -1,7 +1,8 @@
 import os
-import time
 
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 BUCKET_PREFIX = "COUCHBASE_BUCKET_"
 BUCKET_NAME_SUFFIX = "_NAME"
@@ -14,21 +15,22 @@ couchbase_username = os.environ['COUCHBASE_USERNAME']
 couchbase_password = os.environ['COUCHBASE_PASSWORD']
 
 couchbase_down = True
+
+s = requests.Session()
+retries = Retry(total=10, backoff_factor=1, status_forcelist=[502, 503, 504, 400, 500])
+s.mount('http://', HTTPAdapter(max_retries=retries))
+
 print("waiting for couchbase")
-while (couchbase_down):
-    try:
-        requests.get("http://" + couchbase_host + ":" + couchbase_port + "/")
-        couchbase_down = False
-    except:
-        time.sleep(1)
+
+s.get("http://" + couchbase_host + ":" + couchbase_port + "/")
 
 print("creating user")
 
-requests.post("http://" + couchbase_host + ":" + couchbase_port + "/settings/web", data={
+print(s.post("http://" + couchbase_host + ":" + couchbase_port + "/settings/web", data={
     "username": couchbase_username,
     "password": couchbase_password,
     "port": "8091"
-})
+}).text)
 
 for env in os.environ:
     auth = (couchbase_username, couchbase_password)
@@ -39,24 +41,23 @@ for env in os.environ:
         bucketPassword = os.environ[BUCKET_PREFIX + bucketKey + BUCKET_PASSWORD_SUFFIX]
         print("Creating bucket " + bucketKey + " As " + bucketName)
 
-        requests.post("http://" + couchbase_host + ":" + couchbase_port + "/pools/default/buckets",
-                      data={
-                          'name': bucketName,
-                          'ramQuotaMB': "200",
-                          'saslPassword': bucketPassword,
-                          'proxyPort': "11214",
-                          'authType': 'sasl'
-                      }, auth=auth).raise_for_status()
+        print(s.post("http://" + couchbase_host + ":" + couchbase_port + "/pools/default/buckets",
+                     data={
+                         'name': bucketName,
+                         'ramQuotaMB': "200",
+                         'saslPassword': bucketPassword,
+                         'authType': 'sasl'
+                     }, auth=auth).text)
 
         viewsDir = os.environ.get(BUCKET_PREFIX + bucketKey + BUCKET_VIEWS_SUFFIX)
         if (viewsDir):
-            time.sleep(5)
             for (filenames) in os.listdir(viewsDir):
                 print("Creating view " + filenames)
                 with open(viewsDir + "/" + filenames, 'r') as myfile:
                     viewJs = myfile.read()
-                    requests.put(
-                        "http://" + couchbase_host + ":8092" + "/" + bucketName + "/_design/_" + filenames[:-5],
-                        json=viewJs, auth=auth)
+                    print(s.put(
+                        "http://" + couchbase_host + ":8092" + "/" + bucketName + "/_design/_" + filenames[
+                                                                                                 :-5],
+                        json=viewJs, auth=auth).text)
 
 print("couchbase setup")
