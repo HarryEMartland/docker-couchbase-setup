@@ -56,7 +56,7 @@ for env in os.environ:
                 with open(viewsDir + "/" + filenames, 'r') as myfile:
                     viewJs = myfile.read()
                     print(s.put(
-                        "http://" + couchbase_host + ":8092" + "/" + bucketName + "/_design/_" + filenames[
+                        "http://" + couchbase_host + ":8092" + "/" + bucketName + "/_design/" + filenames[
                                                                                                  :-5],
                         json=viewJs, auth=auth).text)
 
