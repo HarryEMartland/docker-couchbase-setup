@@ -1,5 +1,0 @@
-{
-    "spatial": {
-        "name": "function (doc) {\n  if (doc.geometry) {\n    emit(doc.geometry, null);\n  }\n}"
-    }
-}

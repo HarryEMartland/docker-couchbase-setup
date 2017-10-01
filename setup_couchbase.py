@@ -32,6 +32,37 @@ print(s.post("http://" + couchbase_host + ":" + couchbase_port + "/settings/web"
     "port": "8091"
 }).text)
 
+
+def create_views():
+    for (designDocument) in os.listdir(viewsDir + "/view"):
+        print("Creating design document " + designDocument)
+        views = {}
+        for (view) in os.listdir(viewsDir + "/view/" + designDocument):
+            print("Creating view " + view)
+
+            with open(viewsDir + "/view/" + designDocument + "/" + view) as viewFile:
+                javascript = viewFile.read()
+                views[view[:-3]] = {"map": javascript}
+        print(s.put(
+            "http://" + couchbase_host + ":8092/" + bucketName + "/_design/" + designDocument,
+            auth=auth, json={"views": views}).text)
+
+
+def create_spacial_views():
+    for (designDocument) in os.listdir(viewsDir + "/spacial"):
+        print("Creating spacial design document " + designDocument)
+        views = {}
+        for (view) in os.listdir(viewsDir + "/spacial/" + designDocument):
+            print("Creating spacial view " + view)
+
+            with open(viewsDir + "/spacial/" + designDocument + "/" + view) as viewFile:
+                javascript = viewFile.read()
+                views[view[:-3]] = javascript
+        print(s.put(
+            "http://" + couchbase_host + ":8092/" + bucketName + "/_design/" + designDocument,
+            auth=auth, json={"spatial": views}).text)
+
+
 for env in os.environ:
     auth = (couchbase_username, couchbase_password)
     env = str(env)
@@ -51,13 +82,7 @@ for env in os.environ:
 
         viewsDir = os.environ.get(BUCKET_PREFIX + bucketKey + BUCKET_VIEWS_SUFFIX)
         if (viewsDir):
-            for (filenames) in os.listdir(viewsDir):
-                print("Creating view " + filenames)
-                with open(viewsDir + "/" + filenames, 'r') as myfile:
-                    viewJs = myfile.read()
-                    print(s.put(
-                        "http://" + couchbase_host + ":8092" + "/" + bucketName + "/_design/" + filenames[
-                                                                                                 :-5],
-                        json=viewJs, auth=auth).text)
+            create_views()
+            create_spacial_views()
 
 print("couchbase setup")
