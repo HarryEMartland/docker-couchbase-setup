@@ -1,6 +1,6 @@
 # Couchbase Setup
 
-This docker contain can be used to help setup Couchbase.
+This docker container can be used to help setup Couchbase.
 The initial use case was for disposable environments for testing or developing against.
 The container consists of a single python script which reads the environment variables holding the desired setup for couchbase.
 Http requests are made to the couchbase server to create a user and buckets using the provided configuration.
@@ -27,3 +27,12 @@ In the example docker compose file, two buckets are created and so two 'bucket k
 |----------------------------------------|-------------|
 |     COUCHBASE_BUCKET_\<bucket key>_NAME|The name of the bucket in couchbase. This is used to access the buckets by applications.|
 | COUCHBASE_BUCKET_\<bucket key>_PASSWORD|The password to access the bucket using sasl authentication. May be blank.|
+| COUCHBASE_BUCKET_\<bucket key>_VIEWS   |The location inside the container where the view .js files are. This variable is optional see below for more information.|
+
+#### Views
+Views can be created in couchbase by mounting .js files into the container.
+The directory structure and name of the files are used as part of the configuration.
+See the example views and docker compose file in this repository.
+The name of the .js file is used for the name of the view and the parent directory is used for the name of the design document.
+
+Both normal views and spacial views can be created
